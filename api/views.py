@@ -28,4 +28,7 @@ class BlogPostDetailView(APIView):
         serializer = BlogPostSerializer(blog_post)
         return Response(serializer.data)
 
-
+    def delete(self, request, pk):
+        blog_post = get_object_or_404(BlogPost, pk=pk)
+        blog_post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
