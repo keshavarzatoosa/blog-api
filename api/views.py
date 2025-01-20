@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework import status
 from blog.models import BlogPost
 from .serializers import BlogPostSerializer
@@ -48,3 +49,16 @@ class BlogPostUpdateView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BlogPostSearchView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        search_term = request.query_params.get('term', '')
+        if search_term:
+            query = Q(title__icontains=search_term) | Q(content__icontains=search_term) | Q(category__icontains=search_term)
+            posts = BlogPost.objects.filter(query)
+        else:
+            posts = BlogPost.objects.all()
+        serializer = BlogPostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
