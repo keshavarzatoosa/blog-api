@@ -22,7 +22,34 @@ class BlogPostListView(APIView):
 
     @swagger_auto_schema(
             operation_description="Create a new blog post",
-            request_body=BlogPostSerializer,
+            request_body=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'tags': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(type=openapi.TYPE_STRING),
+                        description="tags",
+                        example="['Tech', 'Sport']"
+                    ),
+                    'categories': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(type=openapi.TYPE_STRING),
+                        description="Enter name of categories",
+                        example="['Technology', 'Sport', 'Biology']"
+                    ),
+                    'title': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Title of blog post",
+                        example="This is title"
+                    ),
+                    'content': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Content of blog post",
+                        example="This is Content"
+                    ),
+                },
+                required=['title', 'content']
+            ),
             responses={
                 201: BlogPostSerializer(),
                 400: "Bad request"
@@ -54,8 +81,8 @@ class BlogPostDetailView(APIView):
                 },
             manual_parameters=[
                 openapi.Parameter(
-                    'id',
-                    openapi.IN_PATH,
+                    name='id',
+                    in_=openapi.IN_PATH,
                     description="ID of the blog post",
                     type=openapi.TYPE_INTEGER
                 )
