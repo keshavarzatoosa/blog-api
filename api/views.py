@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from rest_framework import status
-from blog.models import BlogPost
+from blog.models import BlogPost, Category
 from .serializers import BlogPostSerializer
 
 
@@ -15,9 +15,17 @@ class BlogPostListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = BlogPostSerializer(data=request.data)
+        data = request.data
+        categories = data.pop('categories', [])
+        category_instances = []
+        for category_name in categories:
+            category, created = Category.objects.get_or_create(name=category_name)
+            category_instances.append(category)
+        serializer = BlogPostSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            blog_post = serializer.save()
+            blog_post.categories.set(category_instances)
+            blog_post.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -44,9 +52,17 @@ class BlogPostUpdateView(APIView):
 
     def put(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
-        serializer = BlogPostSerializer(blog_post, data=request.data)
+        data=request.data
+        categories = data.pop('categories', [])
+        category_instances = []
+        for category_name in categories:
+            category, created = Category.objects.get_or_create(name=category_name)
+            category_instances.append(category)
+        serializer = BlogPostSerializer(blog_post, data=data, partial=False)
         if serializer.is_valid():
-            serializer.save()
+            updated_blog_post = serializer.save()
+            updated_blog_post.categories.set(category_instances)
+            updated_blog_post.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
