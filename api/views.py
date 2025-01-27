@@ -3,58 +3,20 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from rest_framework import status
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from blog.models import BlogPost, Category
 from .serializers import BlogPostSerializer
+from .swagger_configs import *
 
 
 class BlogPostListView(APIView):
 
-    @swagger_auto_schema(
-            operation_description="Get a list of all blog posts",
-            responses={200: BlogPostSerializer(many=True)}
-            )
+    @get_list_swagger
     def get(self, request):
         blog_posts = BlogPost.objects.all()
         serializer = BlogPostSerializer(blog_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-            operation_description="Create a new blog post",
-            request_body=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'tags': openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                        description="tags",
-                        example="['Tech', 'Sport']"
-                    ),
-                    'categories': openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                        description="Enter name of categories",
-                        example="['Technology', 'Sport', 'Biology']"
-                    ),
-                    'title': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Title of blog post",
-                        example="This is title"
-                    ),
-                    'content': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Content of blog post",
-                        example="This is Content"
-                    ),
-                },
-                required=['title', 'content']
-            ),
-            responses={
-                201: BlogPostSerializer(),
-                400: "Bad request"
-                },
-                )
+    @post_swagger
     def post(self, request):
         data = request.data
         categories = data.pop('categories', [])
@@ -73,21 +35,7 @@ class BlogPostListView(APIView):
 
 class BlogPostDetailView(APIView):
 
-    @swagger_auto_schema(
-            operation_description="Get a specific blog post by ID",
-            responses={
-                200: BlogPostSerializer(),
-                404: "Not found"
-                },
-            manual_parameters=[
-                openapi.Parameter(
-                    name='id',
-                    in_=openapi.IN_PATH,
-                    description="ID of the blog post",
-                    type=openapi.TYPE_INTEGER
-                )
-            ]
-                )
+    @get_detail_swagger
     def get(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
         serializer = BlogPostSerializer(blog_post)
@@ -101,6 +49,7 @@ class BlogPostDetailView(APIView):
 
 class BlogPostUpdateView(APIView):
 
+    @get_detail_swagger
     def get(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
         serializer = BlogPostSerializer(blog_post)
