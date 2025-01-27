@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'rest_framework',
+    'drf_yasg',
     'blog.apps.BlogConfig',
     'api.apps.ApiConfig',
 ]

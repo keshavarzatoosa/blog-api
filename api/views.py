@@ -3,17 +3,31 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from rest_framework import status
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from blog.models import BlogPost, Category
 from .serializers import BlogPostSerializer
 
 
 class BlogPostListView(APIView):
 
+    @swagger_auto_schema(
+            operation_description="Get a list of all blog posts",
+            responses={200: BlogPostSerializer(many=True)}
+            )
     def get(self, request):
         blog_posts = BlogPost.objects.all()
         serializer = BlogPostSerializer(blog_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+            operation_description="Create a new blog post",
+            request_body=BlogPostSerializer,
+            responses={
+                201: BlogPostSerializer(),
+                400: "Bad request"
+                },
+                )
     def post(self, request):
         data = request.data
         categories = data.pop('categories', [])
@@ -32,6 +46,21 @@ class BlogPostListView(APIView):
 
 class BlogPostDetailView(APIView):
 
+    @swagger_auto_schema(
+            operation_description="Get a specific blog post by ID",
+            responses={
+                200: BlogPostSerializer(),
+                404: "Not found"
+                },
+            manual_parameters=[
+                openapi.Parameter(
+                    'id',
+                    openapi.IN_PATH,
+                    description="ID of the blog post",
+                    type=openapi.TYPE_INTEGER
+                )
+            ]
+                )
     def get(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
         serializer = BlogPostSerializer(blog_post)
