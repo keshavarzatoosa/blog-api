@@ -41,6 +41,7 @@ class BlogPostDetailView(APIView):
         serializer = BlogPostSerializer(blog_post)
         return Response(serializer.data)
 
+    @delete_swagger
     def delete(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
         blog_post.delete()
@@ -55,6 +56,7 @@ class BlogPostUpdateView(APIView):
         serializer = BlogPostSerializer(blog_post)
         return Response(serializer.data)
 
+    @put_swagger
     def put(self, request, pk):
         blog_post = get_object_or_404(BlogPost, pk=pk)
         data=request.data
@@ -74,6 +76,7 @@ class BlogPostUpdateView(APIView):
 
 class BlogPostSearchView(APIView):
 
+    @search_swagger
     def get(self, request, *args, **kwargs):
         search_term = request.query_params.get('term', '')
         if search_term:
